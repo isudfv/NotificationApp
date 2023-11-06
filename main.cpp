@@ -59,10 +59,10 @@ QString sendEmail(QVariantMap const& map)
 
 QString sendTextToast(QVariantMap const& map)
 {
-    QStringList action_args;
-    for (auto&& [key, value] : map["action"].toMap().asKeyValueRange()) {
-        action_args.append(key + "=" + value.toString());
-    }
+//    QStringList action_args;
+//    for (auto&& [key, value] : map["action"].toMap().asKeyValueRange()) {
+//        action_args.append(key + "=" + value.toString());
+//    }
 
     // Construct the toast template
     // https://learn.microsoft.com/en-us/uwp/schemas/tiles/toastschema/element-image
@@ -81,10 +81,10 @@ QString sendTextToast(QVariantMap const& map)
 
     try {
         // Populate with text and values
-        doc.DocumentElement().SetAttribute(L"launch", action_args.join('&').toStdWString());
+        doc.DocumentElement().SetAttribute(L"launch", L"123");
         doc.SelectSingleNode(L"//text[1]").InnerText(map["subject"].toString().toStdWString());
         doc.SelectSingleNode(L"//text[2]").InnerText(map["content"].toString().toStdWString());
-        doc.SelectSingleNode(L"//image[1]").as<XmlElement>().SetAttribute(L"src", map["icon"].toString().toStdWString());
+//        doc.SelectSingleNode(L"//image[1]").as<XmlElement>().SetAttribute(L"src", map["icon"].toString().toStdWString());
 
         // Construct the notification
         ToastNotification notif{doc};
@@ -92,11 +92,11 @@ QString sendTextToast(QVariantMap const& map)
         notif.Tag(map["id"].toString().toStdWString());
 
         // And send it!
-        DesktopNotificationManagerCompat::CreateToastNotifier().Show(notif);
+        ToastNotificationManager::CreateToastNotifier(L"PC.NotificationApp").Show(notif);
     }
     catch (hresult_error& e) {
-        SPDLOG_ERROR(L"code: {}, message: {}.", (int)e.code(), (std::wstring_view)e.message());
-        return QString("code: %1, message: %2.").arg(e.code()).arg(QString::fromStdWString(e.message().data()));
+//        SPDLOG_ERROR(L"code: {}, message: {}.", (int)e.code(), (std::wstring_view)e.message());
+//        return QString("code: %1, message: %2.").arg(e.code()).arg(QString::fromStdWString(e.message().data()));
     }
     return "Show Toast!";
 }
@@ -115,7 +115,7 @@ QString sendTextToast(QVariantMap const& map)
 
 int main(int argc, char* argv[])
 {
-    DesktopNotificationManagerCompat::Register(L"PC.NotificationApp", L"通知中心", L"C:\\Users\\isudfv\\Pictures\\fireworks.png");
+//    DesktopNotificationManagerCompat::Register(L"PC.NotificationApp", L"通知中心", L"C:\\Users\\isudfv\\Pictures\\fireworks.png");
 
     try {
         auto logger = std::make_shared<spdlog::logger>(
@@ -134,14 +134,14 @@ int main(int argc, char* argv[])
         std::cerr << "Log init failed: " << ex.what() << std::endl;
     }
 
-    DesktopNotificationManagerCompat::OnActivated([](DesktopNotificationActivatedEventArgsCompat e) {
-        SPDLOG_INFO(L"On Toast Activated: {}", e.Argument());
-        QString args = QString::fromStdWString(e.Argument());
-        if (args.contains("action=execute")) {
-            QUrlQuery query{args};
-            SPDLOG_INFO("Execute: {}", QProcess::startDetached(query.queryItemValue("exe_path"), query.allQueryItemValues("exe_args")));
-        }
-    });
+//    DesktopNotificationManagerCompat::OnActivated([](DesktopNotificationActivatedEventArgsCompat e) {
+//        SPDLOG_INFO(L"On Toast Activated: {}", e.Argument());
+//        QString args = QString::fromStdWString(e.Argument());
+//        if (args.contains("action=execute")) {
+//            QUrlQuery query{args};
+//            SPDLOG_INFO("Execute: {}", QProcess::startDetached(query.queryItemValue("exe_path"), query.allQueryItemValues("exe_args")));
+//        }
+//    });
 
     QCoreApplication app(argc, argv);
 
